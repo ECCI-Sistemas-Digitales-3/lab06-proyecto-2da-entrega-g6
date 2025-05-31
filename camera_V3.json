@@ -1,0 +1,311 @@
+[
+    {
+        "id": "632944f475a31704",
+        "type": "tab",
+        "label": "Flow 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "2594dee36bd06ee7",
+        "type": "ui_button",
+        "z": "632944f475a31704",
+        "name": "Tomar Foto",
+        "group": "4d4d4d4d4d4d4d4d",
+        "order": 1,
+        "width": 0,
+        "height": 0,
+        "passthru": false,
+        "label": "Tomar Foto",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "str",
+        "topic": "",
+        "topicType": "str",
+        "x": 90,
+        "y": 40,
+        "wires": [
+            [
+                "15cfc547dda03912"
+            ]
+        ]
+    },
+    {
+        "id": "c510ced74a5615f2",
+        "type": "ui_template",
+        "z": "632944f475a31704",
+        "group": "4d4d4d4d4d4d4d4d",
+        "name": "Mostrar Imagen",
+        "order": 2,
+        "width": "6",
+        "height": "5",
+        "format": "<div style=\"width: 100%; overflow: auto; max-height: 80vh;\">\n    <canvas id=\"canvas\" style=\"display: block; width: 100%; height: auto;\"></canvas>\n</div>\n<p id=\"colorInfo\" style=\"color: white; font-weight: bold;\"></p>\n\n<script>\n    (function(scope) {\n        scope.$watch('msg.payload', function(payload) {\n            // Verificar si el payload es una cadena base64 con imagen\n            if (typeof payload !== 'string' || !payload.startsWith(\"data:image\")) return;\n\n            const canvas = document.getElementById(\"canvas\");\n            const ctx = canvas.getContext(\"2d\");\n            const img = new Image();\n\n            img.onload = function () {\n                // Calcular la proporción de la imagen\n                const aspectRatio = img.width / img.height;\n\n                // Tamaño máximo del canvas (ajustable)\n                const maxWidth = 1000;  // Máximo ancho para el canvas\n                const maxHeight = 800;  // Máxima altura para el canvas\n\n                // Ajustar tamaño del canvas\n                let canvasWidth = img.width;\n                let canvasHeight = img.height;\n\n                // Si la imagen es más ancha que el máximo permitido\n                if (img.width > maxWidth) {\n                    canvasWidth = maxWidth;\n                    canvasHeight = maxWidth / aspectRatio;\n                }\n\n                // Si la imagen es más alta que el máximo permitido\n                if (canvasHeight > maxHeight) {\n                    canvasHeight = maxHeight;\n                    canvasWidth = maxHeight * aspectRatio;\n                }\n\n                // Establecer el tamaño final del canvas\n                canvas.width = canvasWidth;\n                canvas.height = canvasHeight;\n\n                // Dibujar la imagen en el canvas\n                ctx.drawImage(img, 0, 0, canvas.width, canvas.height);\n\n                // Manejar el clic para obtener el color\n                canvas.onclick = function(evt) {\n                    const rect = canvas.getBoundingClientRect();\n                    const scaleX = canvas.width / rect.width;\n                    const scaleY = canvas.height / rect.height;\n\n                    const x = Math.floor((evt.clientX - rect.left) * scaleX);\n                    const y = Math.floor((evt.clientY - rect.top) * scaleY);\n\n                    const pixel = ctx.getImageData(x, y, 1, 1).data;\n                    const rgb = {\n                        r: pixel[0],\n                        g: pixel[1],\n                        b: pixel[2]\n                    };\n\n                    document.getElementById(\"colorInfo\").innerText = `RGB(${rgb.r}, ${rgb.g}, ${rgb.b})`;\n                    scope.send({ payload: { x, y, color: rgb } });\n                };\n            };\n\n            img.src = payload; // Establecer la fuente de la imagen (base64)\n        });\n    })(scope);\n</script>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 360,
+        "y": 240,
+        "wires": [
+            [
+                "4f5ea924eec5970c"
+            ]
+        ]
+    },
+    {
+        "id": "8d17090519d08279",
+        "type": "exec",
+        "z": "632944f475a31704",
+        "command": "libcamera-still -o /home/Laura/foto.jpg",
+        "addpay": "payload",
+        "append": "",
+        "useSpawn": "false",
+        "timer": "",
+        "winHide": true,
+        "oldrc": false,
+        "name": "",
+        "x": 630,
+        "y": 60,
+        "wires": [
+            [],
+            [
+                "c574f54e1e4cc9ae"
+            ],
+            []
+        ]
+    },
+    {
+        "id": "c574f54e1e4cc9ae",
+        "type": "file in",
+        "z": "632944f475a31704",
+        "name": "",
+        "filename": "/home/Laura/foto.jpg",
+        "filenameType": "str",
+        "format": "",
+        "chunk": false,
+        "sendError": false,
+        "encoding": "none",
+        "allProps": false,
+        "x": 180,
+        "y": 160,
+        "wires": [
+            [
+                "45be05942a010280",
+                "c5168c878489d3a9"
+            ]
+        ]
+    },
+    {
+        "id": "4f5ea924eec5970c",
+        "type": "function",
+        "z": "632944f475a31704",
+        "name": "formato rgb",
+        "func": "// Código para el nodo 'formato rgb'\n// Recibe: msg.payload = { x, y, color: { r, g, b } }\n\nif (msg.payload && msg.payload.color) {\n    let r = msg.payload.color.r;\n    let g = msg.payload.color.g;\n    let b = msg.payload.color.b;\n\n    if (\n        Number.isInteger(r) && r >= 0 && r <= 255 &&\n        Number.isInteger(g) && g >= 0 && g <= 255 &&\n        Number.isInteger(b) && b >= 0 && b <= 255\n    ) {\n        // Guardar el objeto RGB en el contexto de flujo\n        // Puedes usar cualquier nombre para la variable, como 'ultimoColorRGB'\n        flow.set('ultimoColorRGB', { r: r, g: g, b: b });\n\n        let hex = `#${((1 << 24) | (r << 16) | (g << 8) | b).toString(16).slice(1).toUpperCase()}`;\n        msg.payload = hex; // Asigna el valor hexadecimal directamente a msg.payload\n    } else {\n        msg.payload = \"Valores de color fuera de rango (0-255)\";\n    }\n} else {\n    msg.payload = \"Mensaje de entrada incorrecto: 'color' no encontrado en el payload.\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 550,
+        "y": 240,
+        "wires": [
+            [
+                "b3e1280bcd13a591"
+            ]
+        ]
+    },
+    {
+        "id": "c5168c878489d3a9",
+        "type": "function",
+        "z": "632944f475a31704",
+        "name": "imagen_formato_base64",
+        "func": "let file = msg.payload;\nlet mime = msg.file && msg.file.mimetype ? msg.file.mimetype : \"image/jpeg\";\n\nlet base64str = `data:${mime};base64,${file.toString('base64')}`;\n\nflow.set(\"imagen_base64\", base64str);\nreturn { payload: base64str };",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 150,
+        "y": 240,
+        "wires": [
+            [
+                "c510ced74a5615f2"
+            ]
+        ]
+    },
+    {
+        "id": "272b4e26f49d267e",
+        "type": "ui_button",
+        "z": "632944f475a31704",
+        "name": "",
+        "group": "4d4d4d4d4d4d4d4d",
+        "order": 0,
+        "width": "0",
+        "height": "0",
+        "passthru": false,
+        "label": "Enviar color",
+        "tooltip": "",
+        "color": "",
+        "bgcolor": "",
+        "className": "",
+        "icon": "",
+        "payload": "",
+        "payloadType": "date",
+        "topic": "topic",
+        "topicType": "msg",
+        "x": 170,
+        "y": 320,
+        "wires": [
+            [
+                "9419e24e945960c8"
+            ]
+        ]
+    },
+    {
+        "id": "9419e24e945960c8",
+        "type": "function",
+        "z": "632944f475a31704",
+        "name": "function 6",
+        "func": "// Código para el nodo 'function 6'\n// Recibe: msg de un botón (no importa el payload, solo lo usa para disparar)\n// Objetivo: Recuperar el último color RGB del contexto de flujo y convertirlo a CMYK,\n//           luego formatear el payload para el TXT con ambos.\n\n// --- Función de conversión RGB a CMYK ---\nfunction rgbToCmyk(r, g, b) {\n    if (r === 0 && g === 0 && b === 0) {\n        return { c: 0, m: 0, y: 0, k: 100 }; // Negro puro\n    }\n\n    // Normalizar R, G, B a valores de 0 a 1\n    r /= 255;\n    g /= 255;\n    b /= 255;\n\n    // Calcular K (Key/Black)\n    let k = 1 - Math.max(r, g, b);\n\n    // Calcular C, M, Y\n    let c = (1 - r - k) / (1 - k);\n    let m = (1 - g - k) / (1 - k);\n    let y = (1 - b - k) / (1 - k);\n\n    // Asegurarse de que los valores no sean NaN o Infinito (pasa si k es 1)\n    c = isNaN(c) ? 0 : c;\n    m = isNaN(m) ? 0 : m;\n    y = isNaN(y) ? 0 : y;\n\n    // Convertir a porcentajes y redondear\n    c = Math.round(c * 100);\n    m = Math.round(m * 100);\n    y = Math.round(y * 100);\n    k = Math.round(k * 100);\n\n    return { c: c, m: m, y: y, k: k };\n}\n// --- Fin Función de conversión RGB a CMYK ---\n\n\nlet ultimoColor = flow.get('ultimoColorRGB');\n\nif (ultimoColor && typeof ultimoColor.r === 'number' && typeof ultimoColor.r === 'number' && typeof ultimoColor.g === 'number' && typeof ultimoColor.b === 'number') {\n    let r = ultimoColor.r;\n    let g = ultimoColor.g;\n    let b = ultimoColor.b;\n\n    if (\n        Number.isInteger(r) && r >= 0 && r <= 255 &&\n        Number.isInteger(g) && g >= 0 && g <= 255 &&\n        Number.isInteger(b) && b >= 0 && b <= 255\n    ) {\n        // Convertir RGB a CMYK\n        let cmyk = rgbToCmyk(r, g, b);\n\n        // Formatear el payload con RGB y CMYK\n        msg.payload = `RGB: ${r},${g},${b} | CMYK: ${cmyk.c},${cmyk.m},${cmyk.y},${cmyk.k}`;\n\n        // Si solo quieres CMYK, usa esta línea en su lugar:\n        // msg.payload = `CMYK: ${cmyk.c},${cmyk.m},${cmyk.y},${cmyk.k}`;\n\n    } else {\n        msg.payload = \"Error: El último color RGB guardado está fuera de rango (0-255).\";\n    }\n} else {\n    msg.payload = \"No se ha seleccionado ningún color RGB aún o el formato es incorrecto.\";\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 340,
+        "y": 320,
+        "wires": [
+            [
+                "29a042c91e0285d8"
+            ]
+        ]
+    },
+    {
+        "id": "29a042c91e0285d8",
+        "type": "file",
+        "z": "632944f475a31704",
+        "name": "",
+        "filename": "/home/Laura/Color.txt",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": false,
+        "overwriteFile": "false",
+        "encoding": "none",
+        "x": 540,
+        "y": 320,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "b3e1280bcd13a591",
+        "type": "ui_template",
+        "z": "632944f475a31704",
+        "group": "4d4d4d4d4d4d4d4d",
+        "name": "cuadro rgb",
+        "order": 4,
+        "width": "2",
+        "height": "2",
+        "format": "<div style=\"width: 100%; height: 100%; background-color: {{msg.payload}};\"></div>",
+        "storeOutMessages": true,
+        "fwdInMessages": true,
+        "resendOnRefresh": true,
+        "templateScope": "local",
+        "className": "",
+        "x": 710,
+        "y": 240,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "15cfc547dda03912",
+        "type": "function",
+        "z": "632944f475a31704",
+        "name": "function 2",
+        "func": "msg.payload = \"Cargando foto...\"; // Texto a mostrar\nmsg.enabled = true; // Opcional: asegura que el widget esté habilitado\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 240,
+        "y": 40,
+        "wires": [
+            [
+                "0e046767a108b27a",
+                "8d17090519d08279"
+            ]
+        ]
+    },
+    {
+        "id": "0e046767a108b27a",
+        "type": "ui_text_input",
+        "z": "632944f475a31704",
+        "name": "",
+        "label": "",
+        "tooltip": "",
+        "group": "4d4d4d4d4d4d4d4d",
+        "order": 5,
+        "width": 0,
+        "height": 0,
+        "passthru": true,
+        "mode": "text",
+        "delay": 300,
+        "topic": "topic",
+        "sendOnBlur": true,
+        "className": "",
+        "topicType": "msg",
+        "x": 380,
+        "y": 80,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "45be05942a010280",
+        "type": "function",
+        "z": "632944f475a31704",
+        "name": "function 5",
+        "func": "// Envía un mensaje vacío o un espacio para \"limpiar\" el texto\nmsg.payload = \"\"; \n// Opcional: si quieres ocultar completamente el widget, puedes usar:\n// msg.enabled = false; // Requiere que el ui_text tenga una configuración para esto.\n// O simplemente puedes dejar msg.payload vacío para que no muestre nada.\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 160,
+        "wires": [
+            [
+                "0e046767a108b27a"
+            ]
+        ]
+    },
+    {
+        "id": "4d4d4d4d4d4d4d4d",
+        "type": "ui_group",
+        "name": "Cámara",
+        "tab": "5e5e5e5e5e5e5e5e",
+        "order": 1,
+        "disp": true,
+        "width": 6
+    },
+    {
+        "id": "5e5e5e5e5e5e5e5e",
+        "type": "ui_tab",
+        "name": "Dashboard",
+        "icon": "camera",
+        "order": 1
+    }
+]
