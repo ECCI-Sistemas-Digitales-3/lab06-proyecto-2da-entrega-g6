@@ -2,7 +2,7 @@
 # Lab06: Proyecto 2da. entrega
 
 ## Integrantes
-1. Laura Hernandez
+1. Laura Hernandez 
 2. Sergio Ricardo Leon
 3. Juan Sebastian Alvarez
 ## Documentación
