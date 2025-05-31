@@ -2,9 +2,9 @@
 # Lab06: Proyecto 2da. entrega
 
 ## Integrantes
-Laura Hernandez
-Sergio Ricardo Leon
-Juan Sebastian Alvarez
+1. Laura Hernandez
+2. Sergio Ricardo Leon
+3. Juan Sebastian Alvarez
 ## Documentación
 para la implementacion de la camara se instalo la version de pi-camera 1.3 esto con el objetivo de procesar las inagenes de la camara y reflejarlas en el NODE-red, tambien se utilizo la libreria `UI` cuya funcion es visualizar los bloques en un dashboard y desde la terminal de la raspberry se instalo la libreria `libcamera-still`  a traves del comando
 ```
