@@ -17,7 +17,7 @@ lib-camera -o prueba.jpg
 
 Las librerias utilizadas para la elaboracion del dashboard en NODE-red fueron `node-red dashboard` como unica capaz de generar el programa a traves de la IP general que se va a utilizar para el proyecto
  ![imager](
-https://github.com/ECCI-Sistemas-Digitales-3/lab06-proyecto-2da-entrega-g6/blob/main/flow.jpg)
+https://github.com/ECCI-Sistemas-Digitales-3/lab06-proyecto-2da-entrega-g6/blob/main/imagen_flow.jpg)
 
 ## Funcionamiento del codigo de las funciones
 
